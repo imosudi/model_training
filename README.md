@@ -124,29 +124,6 @@ These scripts are designed as learning resources for:
 
 ---
 
-## Repository Structure
-
-```
-ai_training/
-├── README.md              # This file
-├── one/
-│   ├── train_one.py      # Iris classification
-│   ├── iris_pairplot.png
-│   ├── iris_confusion_matrices.png
-│   ├── iris_decision_tree.png
-│   └── iris_knn_k_sweep.png
-├── cancer/
-│   ├── cancer_train.py   # Breast cancer diagnosis
-│   ├── confusion_matrix_logistic.png
-│   ├── confusion_matrix_randomforest.png
-│   ├── random_forest_feature_importances.png
-│   ├── logistic_regression_feature_importances.png
-│   ├── randomforest_model.pkl
-│   └── logisticregression_model.pkl
-└── three/                 # Future project
-```
-
----
 
 ## Notes
 
