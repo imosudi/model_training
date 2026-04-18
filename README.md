@@ -1,4 +1,4 @@
-# Basic AI/ML Training
+# Basic AI/ML Model Training
 
 Educational machine learning project covering classification algorithms and model evaluation techniques.
 
