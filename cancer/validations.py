@@ -1,20 +1,17 @@
-from trainings import X_test_sc, X_train_sc, X_train_sc, lr, rf, knn, dt, X_train, X_test, y_train
-from sklearn.model_selection import  cross_val_score
+from sklearn.model_selection import cross_val_score
 
-# Cross-validation scores (5-fold) for quick comparison
-lr_cv = cross_val_score(lr, X_train_sc, y_train, cv=5).mean()
-rf_cv = cross_val_score(rf, X_train,    y_train, cv=5).mean()
-knn_cv = cross_val_score(knn, X_train_sc, y_train, cv=5).mean()
-dt_cv  = cross_val_score(dt, X_train,    y_train, cv=5).mean()
+from trainings import MODEL_CONFIGS, X_train_sc, X_train, X_test_sc, X_test, y_train
 
-print(f"Logistic Regression Cross-Validation accuracy: {lr_cv:.3f}")  # ~0.960
-print(f"Random Forest Cross-Validation accuracy: {rf_cv:.3f}")  # ~0.963
-print(f"k-NN Cross-Validation accuracy: {knn_cv:.3f}")  # ~0.956
-print(f"Decision Tree Cross-Validation accuracy: {dt_cv:.3f}")  # ~0.944
+# ── Cross-validation ──────────────────────────────────────────────────────────
+cv_scores = {}
+for name, (model, scale) in MODEL_CONFIGS.items():
+    X = X_train_sc if scale else X_train
+    cv_scores[name] = cross_val_score(model, X, y_train, cv=5).mean()
+    print(f"{name} CV accuracy: {cv_scores[name]:.3f}")
 
-# Evaluate on test set
-# Predictions
-y_pred_lr = lr.predict(X_test_sc) # Logistic Regression needs scaled features
-y_pred_rf = rf.predict(X_test) # Random Forest can use raw features
-y_pred_knn = knn.predict(X_test_sc) # k-NN needs scaled features
-y_pred_dt = dt.predict(X_test) # Decision Tree can use raw features 
+# ── Test-set predictions ──────────────────────────────────────────────────────
+predictions = {}
+for name, (model, scale) in MODEL_CONFIGS.items():
+    predictions[name] = model.predict(X_test_sc if scale else X_test)
+
+y_pred_lr, y_pred_knn, y_pred_rf, y_pred_dt = (predictions[k] for k in ("lr", "knn", "rf", "dt"))

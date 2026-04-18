@@ -1,4 +1,3 @@
-
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -9,63 +8,55 @@ import numpy as np
 
 from data_load import X_train, X_test, y_train, y_test
 
-
-# Feature scaling
+# ── Scaling ───────────────────────────────────────────────────────────────────
 scaler = StandardScaler()
-
-# Fit ONLY on training data, then transform both
 X_train_sc = scaler.fit_transform(X_train)
-X_test_sc  = scaler.transform(X_test)   # no re-fitting!
+X_test_sc  = scaler.transform(X_test)
 
-# Verify: training features now have μ≈0, σ≈1
-print(X_train_sc.mean(axis=0).round(3))   # [0. 0. 0. ...]
-print(X_train_sc.std(axis=0).round(3))    # [1. 1. 1. ...]
+# ── Model definitions: (model, needs_scaling) ─────────────────────────────────
+MODEL_CONFIGS = {
+    "lr":  (LogisticRegression(C=1.0, max_iter=1000, random_state=42),  True),
+    "knn": (KNeighborsClassifier(n_neighbors=5),                         True),
+    "rf":  (RandomForestClassifier(n_estimators=100, random_state=42),  False),
+    "dt":  (DecisionTreeClassifier(max_depth=3, random_state=42),       False),
+}
 
-# Not needed for tree-based models (Random Forest)
-# but required for Logistic Regression
+# ── Training ──────────────────────────────────────────────────────────────────
+models = {}
+for name, (model, scale) in MODEL_CONFIGS.items():
+    models[name] = model.fit(X_train_sc if scale else X_train, y_train)
 
-# Model Training
-# Model 1: Logistic Regression (linear, fast, interpretable)
-lr = LogisticRegression(C=1.0, max_iter=1000, random_state=42)
-lr.fit(X_train_sc, y_train)
+lr, knn, rf, dt = (models[k] for k in ("lr", "knn", "rf", "dt"))
 
-# Model 2: Random Forest (ensemble, handles non-linearity)
-rf = RandomForestClassifier(
-    n_estimators=100,   # 100 decision trees
-    max_depth=None,     # grow fully unless limited
-    random_state=42
-)
-rf.fit(X_train, y_train)  # RF doesn't need scaling
+# ── Learning curves ───────────────────────────────────────────────────────────
+LC_PARAMS = dict(cv=5, train_sizes=np.linspace(0.2, 1.0, 5), scoring="accuracy")
 
-# Model 3: k-Nearest Neighbors (non-parametric, distance-based)
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train_sc, y_train)  # k-NN needs scaled features
-
-# Model 4: Decision Tree (single tree, easy to visualize)
-dt = DecisionTreeClassifier(max_depth=3, random_state=42)
-dt.fit(X_train, y_train)  # Decision Tree doesn't need scaling
-
-
-
-# Learning curves - train vs validation score across dataset sizes - Random Forest
-train_sizes, train_scores, val_scores = learning_curve(
-    rf, X_train, y_train,
-    cv=5,                                    # 5-fold CV
-    train_sizes=np.linspace(0.2, 1.0, 5),  # 20%→100%
-    scoring="accuracy"
-)
+learning_curves = {}
+for name, (model, scale) in MODEL_CONFIGS.items():
+    sizes, train_sc, val_sc = learning_curve(
+        model, X_train_sc if scale else X_train, y_train, **LC_PARAMS
+    )
+    learning_curves[name] = {
+        "train_sizes":  sizes,
+        "train_scores": train_sc,
+        "val_scores":   val_sc,
+    }
 
 
+# ── Backwards-compatible unpacking for visualisations.py ─────────────────────
+for _name in MODEL_CONFIGS:
+    globals()[f"{_name}_train_sizes"]  = learning_curves[_name]["train_sizes"]
+    globals()[f"{_name}_train_scores"] = learning_curves[_name]["train_scores"]
+    globals()[f"{_name}_val_scores"]   = learning_curves[_name]["val_scores"]
 
-print(f"Train: {len(X_train)} samples")  # 455
-print(f"Test:  {len(X_test)} samples")   # 114
+train_sizes  = learning_curves["knn"]["train_sizes"]
+train_scores = learning_curves["knn"]["train_scores"]
+val_scores   = learning_curves["knn"]["val_scores"]
 
-# Verify stratification
-print(y_train.mean().round(3))  # 0.628 ≈ same ratio
-print(y_test.mean().round(3))   # 0.623
+# ── Sanity checks ─────────────────────────────────────────────────────────────
+assert np.allclose(X_train_sc.mean(axis=0), 0, atol=1e-6), "Scaler mean check failed"
+assert np.allclose(X_train_sc.std(axis=0),  1, atol=1e-6), "Scaler std check failed"
+assert abs(y_train.mean() - y_test.mean()) < 0.02,          "Stratification drift detected"
 
-
-
-
-
-
+print(f"Train: {len(X_train)} samples | Test: {len(X_test)} samples")
+print(f"Class balance → train: {y_train.mean():.3f} | test: {y_test.mean():.3f}")

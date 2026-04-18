@@ -1,217 +1,94 @@
 from sklearn.inspection import permutation_importance
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
-from sklearn.model_selection import learning_curve
 
-from trainings import X_train_sc, rf, lr, knn, dt, X_test_sc, y_test
-from data_load import data,  X_train, y_train, y_test
+from data_load import data, X_train, y_train
+from trainings import (
+    X_train_sc, X_test_sc,
+    rf, lr, knn, dt,
+    learning_curves,
+)
 from validations import y_pred_rf, y_pred_lr, y_pred_knn, y_pred_dt
-from trainings import train_sizes, train_scores, val_scores
+from data_load import y_test
+OUTPUT = "cancer/outputs"
 
+# ── Learning curves ───────────────────────────────────────────────────────────
+LC_TITLES = {
+    "rf":  "Random Forest",
+    "lr":  "Logistic Regression",
+    "knn": "k-NN",
+    "dt":  "Decision Tree",
+}
+LC_FILENAMES = {
+    "rf":  "learning_curve_randomforest",
+    "lr":  "learning_curve_logistic",
+    "knn": "learning_curve_knn",
+    "dt":  "learning_curve_decisiontree",
+}
 
-# Plot
-plt.plot(train_sizes, train_scores.mean(axis=1), label="Train accuracy")
-plt.plot(train_sizes, val_scores.mean(axis=1),   label="Validation accuracy")
-plt.fill_between(train_sizes,
-    val_scores.mean(axis=1) - val_scores.std(axis=1),
-    val_scores.mean(axis=1) + val_scores.std(axis=1),
-    alpha=0.15)
-plt.xlabel("Training samples"); plt.ylabel("Accuracy")
-plt.legend();
-plt.title("Learning Curve - Random Forest", fontsize=13)
-plt.tight_layout(); plt.savefig("cancer/outputs/learning_curve_randomforest.png", dpi=300)
-print("\nSaved cancer/outputs/learning_curve_randomforest.png")
-plt.close()
-#plt.show() 
+for name, title in LC_TITLES.items():
+    lc   = learning_curves[name]
+    sizes, tr, val = lc["train_sizes"], lc["train_scores"], lc["val_scores"]
 
-# Learning curves - train vs validation score across dataset sizes - Logistic Regression
-train_sizes, train_scores, val_scores = learning_curve(
-    lr, X_train_sc, y_train,
-    cv=5,                                    # 5-fold CV
-    train_sizes=np.linspace(0.2, 1.0, 5),  # 20%→100%
-    scoring="accuracy"
-)   
-# Plot
-plt.plot(train_sizes, train_scores.mean(axis=1), label="Train accuracy")
-plt.plot(train_sizes, val_scores.mean(axis=1),   label="Validation accuracy")
-plt.fill_between(train_sizes,
-    val_scores.mean(axis=1) - val_scores.std(axis=1),
-    val_scores.mean(axis=1) + val_scores.std(axis=1),
-    alpha=0.15)
-plt.xlabel("Training samples"); plt.ylabel("Accuracy")
-plt.legend();
-plt.title("Learning Curve - Logistic Regression", fontsize=13)
-plt.tight_layout(); plt.savefig("cancer/outputs/learning_curve_logistic.png", dpi=300)
-print("\nSaved cancer/outputs/learning_curve_logistic.png")
-plt.close()
-#plt.show()
+    plt.plot(sizes, tr.mean(axis=1),  label="Train accuracy")
+    plt.plot(sizes, val.mean(axis=1), label="Validation accuracy")
+    plt.fill_between(sizes,
+        val.mean(axis=1) - val.std(axis=1),
+        val.mean(axis=1) + val.std(axis=1),
+        alpha=0.15)
+    plt.xlabel("Training samples"); plt.ylabel("Accuracy")
+    plt.title(f"Learning Curve - {title}", fontsize=13)
+    plt.legend(); plt.tight_layout()
+    path = f"{OUTPUT}/{LC_FILENAMES[name]}.png"
+    plt.savefig(path, dpi=300); plt.close()
+    print(f"Saved {path}")
 
-# Learning curves - train vs validation score across dataset sizes - k-NN
-train_sizes, train_scores, val_scores = learning_curve(
-    knn, X_train_sc, y_train,
-    cv=5,                                    # 5-fold CV
-    train_sizes=np.linspace(0.2, 1.0, 5),  # 20%→100%
-    scoring="accuracy"
-)
-# Plot
-plt.plot(train_sizes, train_scores.mean(axis=1), label="Train accuracy")
-plt.plot(train_sizes, val_scores.mean(axis=1),   label="Validation accuracy")
-plt.fill_between(train_sizes,
-    val_scores.mean(axis=1) - val_scores.std(axis=1),
-    val_scores.mean(axis=1) + val_scores.std(axis=1),
-    alpha=0.15)
-plt.xlabel("Training samples"); plt.ylabel("Accuracy")
-plt.legend();
-plt.title("Learning Curve - k-NN", fontsize=13)
-plt.tight_layout(); plt.savefig("cancer/outputs/learning_curve_knn.png", dpi=300)
-print("\nSaved cancer/outputs/learning_curve_knn.png")
-plt.close()
-#plt.show()     
+# ── Confusion matrices ────────────────────────────────────────────────────────
+CM_CONFIGS = [
+    ("lr",  y_pred_lr,  "Logistic Regression",  "confusion_matrix_logistic"),
+    ("rf",  y_pred_rf,  "Random Forest",         "confusion_matrix_randomforest"),
+    ("knn", y_pred_knn, "k-NN",                  "confusion_matrix_knn"),
+    ("dt",  y_pred_dt,  "Decision Tree",         "confusion_matrix_decisiontree"),
+]
 
-# Learning curves - train vs validation score across dataset sizes - Decision Tree
-train_sizes, train_scores, val_scores = learning_curve(
-    dt, X_train, y_train,
-    cv=5,                                    # 5-fold CV
-    train_sizes=np.linspace(0.2, 1.0, 5),  # 20%→100%
-    scoring="accuracy"
-)
-# Plot
-plt.plot(train_sizes, train_scores.mean(axis=1), label="Train accuracy")
-plt.plot(train_sizes, val_scores.mean(axis=1),   label="Validation accuracy")
-plt.fill_between(train_sizes,
-    val_scores.mean(axis=1) - val_scores.std(axis=1),
-    val_scores.mean(axis=1) + val_scores.std(axis=1),
-    alpha=0.15)
-plt.xlabel("Training samples"); plt.ylabel("Accuracy")
-plt.legend();
-plt.title("Learning Curve - Decision Tree", fontsize=13)
-plt.tight_layout(); plt.savefig("cancer/outputs/learning_curve_decisiontree.png", dpi=300)
-print("\nSaved cancer/outputs/learning_curve_decisiontree.png")
-plt.close()
-#plt.show()
+for _, y_pred, title, fname in CM_CONFIGS:
+    cm   = confusion_matrix(y_test, y_pred)
+    disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant", "Benign"])
+    disp.plot(cmap="Blues")
+    plt.title(f"Confusion Matrix - {title}", fontsize=13)
+    plt.tight_layout()
+    path = f"{OUTPUT}/{fname}.png"
+    plt.savefig(path, dpi=300); plt.close()
+    print(f"Saved {path}")
 
+# ── Feature importances ───────────────────────────────────────────────────────
+def _perm(model, X):
+    result = permutation_importance(model, X, y_test, n_repeats=10, random_state=42)
+    return result.importances_mean
 
+IMPORTANCE_CONFIGS = [
+    ("rf",  rf,  lambda: rf.feature_importances_,           "Random Forest",       "feature_importances_random_forest"),
+    ("lr",  lr,  lambda: lr.coef_[0],                       "Logistic Regression", "feature_importances_logistic_regression"),
+    ("knn", knn, lambda: _perm(knn, X_test_sc),             "k-NN (Permutation)",  "feature_importances_knn"),
+    ("dt",  dt,  lambda: dt.feature_importances_,           "Decision Tree",       "feature_importances_decision_tree"),
+]
 
-# Confusion matrix - Logistic Regression
-cm = confusion_matrix(y_test, y_pred_lr)
-disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant","Benign"])
-disp.plot(cmap="Blues"); 
-plt.title("Confusion Matrix - Logistic Regression", fontsize=13)
-plt.tight_layout()
-plt.savefig("cancer/outputs/confusion_matrix_logistic.png", dpi=300)  # save figure
-print("\nSaved cancer/outputs/confusion_matrix_logistic.png")
-#plt.show()
-plt.close()
+for name, model, get_imp, title, fname in IMPORTANCE_CONFIGS:
+    values = get_imp()
+    # LR uses absolute coefficients
+    if name == "lr":
+        values = np.abs(values)
+    importances = pd.Series(values, index=data.feature_names).sort_values(ascending=False)
+    print(f"\nTop 10 features — {title}:")
+    print(importances.head(10))
 
-
-# Confusion matrix - Random Forest
-cm = confusion_matrix(y_test, y_pred_rf)
-disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant","Benign"])
-disp.plot(cmap="Blues"); 
-plt.title("Confusion Matrix - Random Forest", fontsize=13)
-plt.tight_layout()
-plt.savefig("cancer/outputs/confusion_matrix_randomforest.png", dpi=300)  # save figure
-print("\nSaved cancer/outputs/confusion_matrix_randomforest.png")  
-plt.close()
-#plt.show()
-
-# Confusion matrix - k-NN
-cm = confusion_matrix(y_test, y_pred_knn)
-disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant","Benign"])
-disp.plot(cmap="Blues");
-plt.title("Confusion Matrix - k-NN", fontsize=13)
-plt.tight_layout()
-plt.savefig("cancer/outputs/confusion_matrix_knn.png", dpi=300)  # save figure
-print("\nSaved cancer/outputs/confusion_matrix_knn.png")
-plt.close()
-#plt.show()     
-
-# Confusion matrix - Decision Tree
-cm = confusion_matrix(y_test, y_pred_dt)
-disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant","Benign"])
-disp.plot(cmap="Blues");
-plt.title("Confusion Matrix - Decision Tree", fontsize=13)
-plt.tight_layout()
-plt.savefig("cancer/outputs/confusion_matrix_decisiontree.png", dpi=300)  # save figure
-print("\nSaved cancer/outputs/confusion_matrix_decisiontree.png")
-plt.close()
-#plt.show() 
-
-
-
-# Extract feature importances from Random Forest
-importances_rf = pd.Series(
-    rf.feature_importances_,
-    index=data.feature_names
-).sort_values(ascending=False)
-
-# Top 10 most influential features
-print(importances_rf.head(10))
-
-# Visualise
-importances_rf.head(10).plot(kind="barh")
-plt.xlabel("Importance score")
-plt.title("Top 10 features - Random Forest")
-plt.tight_layout()
-plt.savefig("cancer/outputs/feature_importances_random_forest.png", dpi=300)
-print("\nSaved cancer/outputs/feature_importances_random_forest.png")
-plt.close()
-#plt.show()
-
-# Logistic Regression: inspect coefficients
-coefs = pd.Series(lr.coef_[0], index=data.feature_names)
-print(coefs.abs().sort_values(ascending=False).head(5))
-
-# Extract feature importances from Logistic Regression using absolute coefficients
-importances_lr = coefs.abs().sort_values(ascending=False)
-
-# Top 10 most influential features
-print(importances_lr.head(10))
-importances_lr.head(10).plot(kind="barh")
-plt.xlabel("Importance score")
-plt.title("Top 10 features - Logistic Regression")
-plt.tight_layout()
-plt.savefig("cancer/outputs/feature_importances_logistic_regression.png", dpi=300)
-print("\nSaved cancer/outputs/feature_importances_logistic_regression.png")
-plt.close()
-#plt.show()
-
-# Extract feature importances from k-NN using permutation importance
-perm_importance_knn = permutation_importance(
-    knn, X_test_sc, y_test, n_repeats=10, random_state=42
-)
-importances_knn = pd.Series(
-    perm_importance_knn.importances_mean,
-    index=data.feature_names
-).sort_values(ascending=False)      
-
-# Top 10 most influential features
-print(importances_knn.head(10))
-importances_knn.head(10).plot(kind="barh")
-plt.xlabel("Importance score")
-plt.title("Top 10 features - k-NN (Permutation Importance)")
-plt.tight_layout()
-plt.savefig("cancer/outputs/feature_importances_knn.png", dpi=300)
-print("\nSaved cancer/outputs/feature_importances_knn.png")
-plt.close()
-#plt.show()     
-
-# Extract feature importances from Decision Tree
-importances_dt = pd.Series(
-    dt.feature_importances_,
-    index=data.feature_names
-).sort_values(ascending=False)  
-
-# Top 10 most influential features
-print(importances_dt.head(10))
-importances_dt.head(10).plot(kind="barh")
-plt.xlabel("Importance score")
-plt.title("Top 10 features - Decision Tree")
-plt.tight_layout()
-plt.savefig("cancer/outputs/feature_importances_decision_tree.png", dpi=300)
-print("\nSaved cancer/outputs/feature_importances_decision_tree.png")
-plt.close()
-#plt.show()     
+    importances.head(10).plot(kind="barh")
+    plt.xlabel("Importance score")
+    plt.title(f"Top 10 features - {title}")
+    plt.tight_layout()
+    path = f"{OUTPUT}/{fname}.png"
+    plt.savefig(path, dpi=300); plt.close()
+    print(f"Saved {path}")
