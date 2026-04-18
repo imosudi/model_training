@@ -1,4 +1,4 @@
-from model_training import X_test_sc, X_train_sc, X_train_sc, lr, rf, knn, dt, scaler, X_train, X_test, y_train, y_test
+from trainings import X_test_sc, X_train_sc, X_train_sc, lr, rf, knn, dt, scaler, X_train, X_test, y_train, y_test
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix 
 from sklearn.model_selection import learning_curve, train_test_split, cross_val_score
 

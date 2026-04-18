@@ -22,8 +22,8 @@ np.random.seed(42)  # reproducibility
 os.makedirs("cancer/outputs/models", exist_ok=True)
 
 from data_load import *
-from model_training import *
-from model_validation import *
+from trainings import *
+from validations import *
 from visualisations import *
 from reports import *
 
