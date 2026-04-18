@@ -7,7 +7,7 @@ from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 from sklearn.model_selection import learning_curve
 
 from trainings import X_train_sc, rf, lr, knn, dt, X_test_sc, y_test
-from data_load import data,  X_train, X_test, y_train, y_test
+from data_load import data,  X_train, y_train, y_test
 from validations import y_pred_rf, y_pred_lr, y_pred_knn, y_pred_dt
 from trainings import train_sizes, train_scores, val_scores
 

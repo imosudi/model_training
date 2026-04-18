@@ -1,6 +1,5 @@
-from trainings import X_test_sc, X_train_sc, X_train_sc, lr, rf, knn, dt, scaler, X_train, X_test, y_train, y_test
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix 
-from sklearn.model_selection import learning_curve, train_test_split, cross_val_score
+from trainings import X_test_sc, X_train_sc, X_train_sc, lr, rf, knn, dt, X_train, X_test, y_train
+from sklearn.model_selection import  cross_val_score
 
 # Cross-validation scores (5-fold) for quick comparison
 lr_cv = cross_val_score(lr, X_train_sc, y_train, cv=5).mean()

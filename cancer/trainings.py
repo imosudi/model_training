@@ -6,8 +6,10 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import learning_curve
 import numpy as np
-import os
+
 from data_load import X_train, X_test, y_train, y_test
+
+
 # Feature scaling
 scaler = StandardScaler()
 

@@ -1,5 +1,5 @@
 from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import learning_curve, train_test_split, cross_val_score
+from sklearn.model_selection import  train_test_split
 import pandas as pd
 
 

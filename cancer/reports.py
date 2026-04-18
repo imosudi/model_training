@@ -3,9 +3,9 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 
-from trainings import X_train_sc, rf, lr, knn, dt, X_test_sc, y_test
+from trainings import rf, lr, knn, dt, X_test_sc, y_test
 from validations import y_pred_rf, y_pred_lr, y_pred_knn, y_pred_dt
-from data_load import data,  X_train, X_test, y_train, y_test
+from data_load import X_test, y_test
 
 print("Classification Reports:\n")
 # 
