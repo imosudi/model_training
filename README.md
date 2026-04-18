@@ -1,4 +1,4 @@
-# AI Training Repository
+# Basic AI/ML Training
 
 Educational machine learning project covering classification algorithms and model evaluation techniques.
 
