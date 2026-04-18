@@ -1,6 +1,6 @@
 # Install once: pip install scikit-learn pandas numpy matplotlib
 import time
-
+import os
 import joblib
 import numpy as np
 import pandas as pd
@@ -10,15 +10,17 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.inspection import permutation_importance
 from sklearn.tree import DecisionTreeClassifier, plot_tree
-
-"""from sklearn.metrics import (classification_report,
-                               confusion_matrix, roc_auc_score)"""
 from sklearn.metrics import (classification_report, confusion_matrix,
                                ConfusionMatrixDisplay, roc_auc_score)
 import matplotlib.pyplot as plt
 
 np.random.seed(42)  # reproducibility
+
+# Create output directory if it doesn't exist
+
+os.makedirs("cancer/outputs/models", exist_ok=True)
 
 
 # Load the dataset
@@ -114,8 +116,8 @@ plt.fill_between(train_sizes,
 plt.xlabel("Training samples"); plt.ylabel("Accuracy")
 plt.legend();
 plt.title("Learning Curve - Random Forest", fontsize=13)
-plt.tight_layout(); plt.savefig("cancer/learning_curve_randomforest.png", dpi=300)
-print("\nSaved cancer/learning_curve_randomforest.png")
+plt.tight_layout(); plt.savefig("cancer/outputs/learning_curve_randomforest.png", dpi=300)
+print("\nSaved cancer/outputs/learning_curve_randomforest.png")
 plt.close()
 #plt.show() 
 
@@ -136,8 +138,8 @@ plt.fill_between(train_sizes,
 plt.xlabel("Training samples"); plt.ylabel("Accuracy")
 plt.legend();
 plt.title("Learning Curve - Logistic Regression", fontsize=13)
-plt.tight_layout(); plt.savefig("cancer/learning_curve_logistic.png", dpi=300)
-print("\nSaved cancer/learning_curve_logistic.png")
+plt.tight_layout(); plt.savefig("cancer/outputs/learning_curve_logistic.png", dpi=300)
+print("\nSaved cancer/outputs/learning_curve_logistic.png")
 plt.close()
 #plt.show()
 
@@ -158,8 +160,8 @@ plt.fill_between(train_sizes,
 plt.xlabel("Training samples"); plt.ylabel("Accuracy")
 plt.legend();
 plt.title("Learning Curve - k-NN", fontsize=13)
-plt.tight_layout(); plt.savefig("cancer/learning_curve_knn.png", dpi=300)
-print("\nSaved cancer/learning_curve_knn.png")
+plt.tight_layout(); plt.savefig("cancer/outputs/learning_curve_knn.png", dpi=300)
+print("\nSaved cancer/outputs/learning_curve_knn.png")
 plt.close()
 #plt.show()     
 
@@ -180,8 +182,8 @@ plt.fill_between(train_sizes,
 plt.xlabel("Training samples"); plt.ylabel("Accuracy")
 plt.legend();
 plt.title("Learning Curve - Decision Tree", fontsize=13)
-plt.tight_layout(); plt.savefig("cancer/learning_curve_decisiontree.png", dpi=300)
-print("\nSaved cancer/learning_curve_decisiontree.png")
+plt.tight_layout(); plt.savefig("cancer/outputs/learning_curve_decisiontree.png", dpi=300)
+print("\nSaved cancer/outputs/learning_curve_decisiontree.png")
 plt.close()
 #plt.show()
 
@@ -210,8 +212,8 @@ disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant","Benign"])
 disp.plot(cmap="Blues"); 
 plt.title("Confusion Matrix - Logistic Regression", fontsize=13)
 plt.tight_layout()
-plt.savefig("cancer/confusion_matrix_logistic.png", dpi=300)  # save figure
-print("\nSaved cancer/confusion_matrix_logistic.png")
+plt.savefig("cancer/outputs/confusion_matrix_logistic.png", dpi=300)  # save figure
+print("\nSaved cancer/outputs/confusion_matrix_logistic.png")
 #plt.show()
 plt.close()
 
@@ -222,8 +224,8 @@ disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant","Benign"])
 disp.plot(cmap="Blues"); 
 plt.title("Confusion Matrix - Random Forest", fontsize=13)
 plt.tight_layout()
-plt.savefig("cancer/confusion_matrix_randomforest.png", dpi=300)  # save figure
-print("\nSaved cancer/confusion_matrix_randomforest.png")  
+plt.savefig("cancer/outputs/confusion_matrix_randomforest.png", dpi=300)  # save figure
+print("\nSaved cancer/outputs/confusion_matrix_randomforest.png")  
 plt.close()
 #plt.show()
 
@@ -233,8 +235,8 @@ disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant","Benign"])
 disp.plot(cmap="Blues");
 plt.title("Confusion Matrix - k-NN", fontsize=13)
 plt.tight_layout()
-plt.savefig("cancer/confusion_matrix_knn.png", dpi=300)  # save figure
-print("\nSaved cancer/confusion_matrix_knn.png")
+plt.savefig("cancer/outputs/confusion_matrix_knn.png", dpi=300)  # save figure
+print("\nSaved cancer/outputs/confusion_matrix_knn.png")
 plt.close()
 #plt.show()     
 
@@ -244,24 +246,25 @@ disp = ConfusionMatrixDisplay(cm, display_labels=["Malignant","Benign"])
 disp.plot(cmap="Blues");
 plt.title("Confusion Matrix - Decision Tree", fontsize=13)
 plt.tight_layout()
-plt.savefig("cancer/confusion_matrix_decisiontree.png", dpi=300)  # save figure
-print("\nSaved cancer/confusion_matrix_decisiontree.png")
+plt.savefig("cancer/outputs/confusion_matrix_decisiontree.png", dpi=300)  # save figure
+print("\nSaved cancer/outputs/confusion_matrix_decisiontree.png")
 plt.close()
 #plt.show() 
 
 
 # Full classification report
-# Random Forest
-print("Classification Report:\n", classification_report(y_test, y_pred_rf,
+print("Classification Reports:\n")
+# 
+print("Random Forest:\n", classification_report(y_test, y_pred_rf,
       target_names=["Malignant", "Benign"]))
 # Logistic Regression
-print("Classification Report:\n", classification_report(y_test, y_pred_lr,
+print("Logistic Regression:\n", classification_report(y_test, y_pred_lr,
       target_names=["Malignant", "Benign"]))
 # k-NN  
-print("Classification Report:\n", classification_report(y_test, y_pred_knn,
+print("k-NN:\n", classification_report(y_test, y_pred_knn,
       target_names=["Malignant", "Benign"]))
 # Decision Tree
-print("Classification Report:\n", classification_report(y_test, y_pred_dt,
+print("Decision Tree:\n", classification_report(y_test, y_pred_dt,
       target_names=["Malignant", "Benign"]))
 
 #time.sleep(200)  # just to space out the prints a bit
@@ -280,6 +283,15 @@ print("Classification Report:\n", classification_report(y_test, y_pred_dt,
 y_prob_rf = rf.predict_proba(X_test)[:, 1]
 print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_rf):.3f}") # ~0.994
 
+y_prob_lr = lr.predict_proba(X_test_sc)[:, 1]
+print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_lr):.3f}") # ~0.992  
+
+y_prob_knn = knn.predict_proba(X_test_sc)[:, 1]
+print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_knn):.3f}") # ~0.987
+
+y_prob_dt = dt.predict_proba(X_test)[:, 1]
+print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_dt):.3f}") # ~0.980
+
 
 # Extract feature importances from Random Forest
 importances_rf = pd.Series(
@@ -295,8 +307,8 @@ importances_rf.head(10).plot(kind="barh")
 plt.xlabel("Importance score")
 plt.title("Top 10 features - Random Forest")
 plt.tight_layout()
-plt.savefig("cancer/random_forest_feature_importances.png", dpi=300)
-print("\nSaved cancer/random_forest_feature_importances.png")
+plt.savefig("cancer/outputs/feature_importances_random_forest.png", dpi=300)
+print("\nSaved cancer/outputs/feature_importances_random_forest.png")
 plt.close()
 #plt.show()
 
@@ -313,20 +325,69 @@ importances_lr.head(10).plot(kind="barh")
 plt.xlabel("Importance score")
 plt.title("Top 10 features - Logistic Regression")
 plt.tight_layout()
-plt.savefig("cancer/logistic_regression_feature_importances.png", dpi=300)
-print("\nSaved cancer/logistic_regression_feature_importances.png")
+plt.savefig("cancer/outputs/feature_importances_logistic_regression.png", dpi=300)
+print("\nSaved cancer/outputs/feature_importances_logistic_regression.png")
 plt.close()
 #plt.show()
+
+# Extract feature importances from k-NN using permutation importance
+perm_importance_knn = permutation_importance(
+    knn, X_test_sc, y_test, n_repeats=10, random_state=42
+)
+importances_knn = pd.Series(
+    perm_importance_knn.importances_mean,
+    index=data.feature_names
+).sort_values(ascending=False)      
+
+# Top 10 most influential features
+print(importances_knn.head(10))
+importances_knn.head(10).plot(kind="barh")
+plt.xlabel("Importance score")
+plt.title("Top 10 features - k-NN (Permutation Importance)")
+plt.tight_layout()
+plt.savefig("cancer/outputs/feature_importances_knn.png", dpi=300)
+print("\nSaved cancer/outputs/feature_importances_knn.png")
+plt.close()
+#plt.show()     
+
+# Extract feature importances from Decision Tree
+importances_dt = pd.Series(
+    dt.feature_importances_,
+    index=data.feature_names
+).sort_values(ascending=False)  
+
+# Top 10 most influential features
+print(importances_dt.head(10))
+importances_dt.head(10).plot(kind="barh")
+plt.xlabel("Importance score")
+plt.title("Top 10 features - Decision Tree")
+plt.tight_layout()
+plt.savefig("cancer/outputs/feature_importances_decision_tree.png", dpi=300)
+print("\nSaved cancer/outputs/feature_importances_decision_tree.png")
+plt.close()
+#plt.show()     
+
 
 
 
 # Save model + scaler as a bundle (Random Forest doesn't need scaler, but we include it for completeness)
 bundle_rf = {"model": rf, "scaler": scaler}
-joblib.dump(bundle_rf, "cancer/randomforest_model.pkl")
-print("Random Forest model saved. cancer/randomforest_model.pkl")
+joblib.dump(bundle_rf, "cancer/outputs/models/randomforest_model.pkl")
+print("Random Forest model saved. cancer/outputs/models/randomforest_model.pkl")
 
 # Save Logistic Regression model + scaler as a bundle
 bundle_lr = {"model": lr, "scaler": scaler}
-joblib.dump(bundle_lr, "cancer/logisticregression_model.pkl")
-print("Logistic Regression model saved. cancer/logisticregression_model.pkl")
+joblib.dump(bundle_lr, "cancer/outputs/models/logisticregression_model.pkl")
+print("Logistic Regression model saved. cancer/outputs/models/logisticregression_model.pkl")
+
+# Save k-NN model + scaler as a bundle
+bundle_knn = {"model": knn, "scaler": scaler}
+joblib.dump(bundle_knn, "cancer/outputs/models/knn_model.pkl")
+print("k-NN model saved. cancer/outputs/models/knn_model.pkl")
+
+# Save Decision Tree model as a bundle (no scaler needed)
+bundle_dt = {"model": dt}
+joblib.dump(bundle_dt, "cancer/outputs/models/decisiontree_model.pkl")
+print("Decision Tree model saved. cancer/outputs/models/decisiontree_model.pkl")    
+
 
