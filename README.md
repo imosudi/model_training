@@ -15,7 +15,7 @@ Breast Cancer Diagnosis: Logistic Regression, Random Forest, k-NN and Decision T
 **Dataset:** Breast Cancer Wisconsin (569 samples, 30 features)
 
 **Files:**
-- `cancer_models.py` - Main model training and evaluation
+- `serialise_models.py` - Main model serialization script
 - `data_load.py` - Data loading and preprocessing utilities
 - `trainings.py` - Training functions and pipelines
 - `validations.py` - Model validation and cross-validation
@@ -60,7 +60,7 @@ Advanced model comparison and evaluation framework.
 ```
 model_training/
 ├── cancer/                    # Breast cancer classification project
-│   ├── cancer_models.py      # Main training script
+│   ├── serialise_models.py   # Model serialisation script
 │   ├── data_load.py          # Data loading utilities
 │   ├── trainings.py          # Training functions
 │   ├── validations.py        # Validation methods
@@ -70,6 +70,7 @@ model_training/
 ├── one/                      # Single model training
 │   └── train_one.py
 ├── three/                    # Multi-model comparison
+├── requirements.txt          # dependency
 ├── README.md                 # This file
 └── LICENSE                   # Project license
 ```
@@ -97,7 +98,7 @@ model_training/
 ## Requirements
 
 ```bash
-pip install scikit-learn pandas numpy matplotlib seaborn joblib
+pip install -r requirements.txt  #scikit-learn pandas numpy matplotlib seaborn joblib
 ```
 
 ## Usage
