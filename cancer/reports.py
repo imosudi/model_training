@@ -1,11 +1,22 @@
 # Full classification report
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import classification_report
+from sklearn.model_selection import cross_val_score
 
-from trainings import rf, lr, knn, dt, tf_model, X_test_sc, y_test
-from validations import y_pred_rf, y_pred_lr, y_pred_knn, y_pred_dt, y_pred_tf
-from data_load import X_test, y_test
+from validations import (_tensorflow_cross_val_accuracy, 
+                         y_pred_rf, y_pred_lr, 
+                         y_pred_knn, y_pred_dt, 
+                         y_pred_tf
+                         )
+from data_load import X_test, y_test, X_train, y_train
 
+from trainings import (
+    MODEL_CONFIGS,
+    X_test_sc,
+    X_train_sc,
+    tf_model,
+    rf, lr, knn, dt, tf_model
+)
 print("Classification Reports:\n")
 # 
 print("Random Forest:\n", classification_report(y_test, y_pred_rf,
@@ -26,27 +37,35 @@ print("TensorFlow:\n", classification_report(y_test, y_pred_tf,
 #time.sleep(200)  # just to space out the prints a bit
 
 
-# Output:
-#                  precision  recall  f1-score  support
-#   Malignant          0.98    0.95      0.96       42
-#   Benign             0.97    0.99      0.98       72
-#
-#    accuracy                           0.96       114
-#   macro avg       0.96      0.95      0.95       114
-#weighted avg       0.96      0.96      0.96       114
-
 # AUC-ROC (1.0 = perfect, 0.5 = random)
+print("AUC-ROC:")
 y_prob_rf = rf.predict_proba(X_test)[:, 1]
-print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_rf):.3f}") # ~0.994
+print(f"Random Forest: {roc_auc_score(y_test, y_prob_rf):.3f}") # ~0.994
 
 y_prob_lr = lr.predict_proba(X_test_sc)[:, 1]
-print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_lr):.3f}") # ~0.992  
+print(f"Logistic Regression: {roc_auc_score(y_test, y_prob_lr):.3f}") # ~0.992  
 
 y_prob_knn = knn.predict_proba(X_test_sc)[:, 1]
-print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_knn):.3f}") # ~0.987
+print(f"k-NN: {roc_auc_score(y_test, y_prob_knn):.3f}") # ~0.987
 
 y_prob_dt = dt.predict_proba(X_test)[:, 1]
-print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_dt):.3f}") # ~0.980
+print(f"Decision Tree: {roc_auc_score(y_test, y_prob_dt):.3f}") # ~0.980
 
 y_prob_tf = tf_model.predict(X_test_sc, verbose=0)[:, 1]
-print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_tf):.3f}")
+print(f"TensorFlow: {roc_auc_score(y_test, y_prob_tf):.3f}")
+
+
+
+
+
+# ── Cross-validation ──────────────────────────────────────────────────────────
+cv_scores = {}
+for name, (model, scale) in MODEL_CONFIGS.items():
+    if name == "tf_model":
+        cv_scores[name] = _tensorflow_cross_val_accuracy(X_train_sc, y_train)
+        print(f"{name} CV accuracy: {cv_scores[name]:.3f}")
+        continue
+
+    X = X_train_sc if scale else X_train
+    cv_scores[name] = cross_val_score(model, X, y_train, cv=5).mean()
+    print(f"{name} CV accuracy: {cv_scores[name]:.3f}")

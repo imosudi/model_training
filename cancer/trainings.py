@@ -26,8 +26,15 @@ X_train_sc = scaler.fit_transform(X_train)
 X_test_sc  = scaler.transform(X_test)
 
 
-TF_FIT_PARAMS = {
-    "epochs": 30,
+TF_MAIN_FIT_PARAMS = {
+    "epochs": 50,
+    "batch_size": 32,
+    "verbose": 1,
+    "validation_split": 0.2,
+}
+
+TF_LOOP_FIT_PARAMS = {
+    "epochs": 50,
     "batch_size": 32,
     "verbose": 0,
 }
@@ -67,7 +74,7 @@ def _tensorflow_learning_curve(X, y, train_sizes, n_splits=5):
 
             tf.keras.utils.set_random_seed(42 + size_idx * 10 + fold_idx)
             fold_model = build_tensorflow_model()
-            fold_model.fit(X[fold_train_idx], y_array[fold_train_idx], **TF_FIT_PARAMS)
+            fold_model.fit(X[fold_train_idx], y_array[fold_train_idx], **TF_LOOP_FIT_PARAMS)
 
             train_acc = fold_model.evaluate(
                 X[fold_train_idx], y_array[fold_train_idx], verbose=0
@@ -88,36 +95,39 @@ def _tensorflow_learning_curve(X, y, train_sizes, n_splits=5):
 
 # ── Model definitions: (model, needs_scaling) ─────────────────────────────────
 MODEL_CONFIGS = {
-    "lr":  (LogisticRegression(C=1.0, max_iter=1000, random_state=42),  True),
+    "lr":  (LogisticRegression(solver="saga", C=1.0, max_iter=1000, random_state=42,  verbose=1),  True),
     "knn": (KNeighborsClassifier(n_neighbors=5),                         True),
-    "rf":  (RandomForestClassifier(n_estimators=100, random_state=42),  False),
+    "rf":  (RandomForestClassifier(n_estimators=100, random_state=42, verbose=1),  False),
     "dt":  (DecisionTreeClassifier(max_depth=3, random_state=42),       False),
-    "tensorflow": (build_tensorflow_model(), True),
+    "tf_model": (build_tensorflow_model(), True),
 }
 
 # ── Training ──────────────────────────────────────────────────────────────────
 training_models = {}
 training_histories = {}
 for name, (model, scale) in MODEL_CONFIGS.items():
-    if name == "tensorflow":
+    print(f"\nTraining {name} model...")
+    if name == "tf_model":
+        print("\nTensorFlow model summary:")
+        model.summary()
         training_histories[name] = model.fit(
             X_train_sc if scale else X_train,
             y_train,
-            **TF_FIT_PARAMS,
+            **TF_MAIN_FIT_PARAMS,
         )
         training_models[name] = model
         continue
 
     training_models[name] = model.fit(X_train_sc if scale else X_train, y_train)
 
-lr, knn, rf, dt, tf_model = (training_models[k] for k in ("lr", "knn", "rf", "dt", "tensorflow"))
+lr, knn, rf, dt, tf_model = (training_models[k] for k in ("lr", "knn", "rf", "dt", "tf_model"))
 
 # ── Learning curves ───────────────────────────────────────────────────────────
 LC_PARAMS = dict(cv=5, train_sizes=np.linspace(0.2, 1.0, 5), scoring="accuracy")
 
 learning_curves = {}
 for name, (model, scale) in MODEL_CONFIGS.items():
-    if name == "tensorflow":
+    if name == "tf_model":
         sizes, train_sc, val_sc = _tensorflow_learning_curve(
             X_train_sc, y_train, LC_PARAMS["train_sizes"], n_splits=LC_PARAMS["cv"]
         )
@@ -142,7 +152,7 @@ train_sizes  = learning_curves["knn"]["train_sizes"]
 train_scores = learning_curves["knn"]["train_scores"]
 val_scores   = learning_curves["knn"]["val_scores"]
 
-tf_val_scores = learning_curves["tensorflow"]["val_scores"]
+tf_val_scores = learning_curves["tf_model"]["val_scores"]
 
 
 # ── Sanity checks ─────────────────────────────────────────────────────────────

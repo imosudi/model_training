@@ -22,14 +22,14 @@ LC_TITLES = {
     "lr":  "Logistic Regression",
     "knn": "k-NN",
     "dt":  "Decision Tree",
-    "tensorflow": "TensorFlow",
+    "tf_model": "TensorFlow",
 }
 LC_FILENAMES = {
     "rf":  "learning_curve_randomforest",
     "lr":  "learning_curve_logistic",
     "knn": "learning_curve_knn",
     "dt":  "learning_curve_decisiontree",
-    "tensorflow": "learning_curve_tensorflow",
+    "tf_model": "learning_curve_tensorflow",
 }
 
 for name, title in LC_TITLES.items():
@@ -55,7 +55,7 @@ CM_CONFIGS = [
     ("rf",  y_pred_rf,  "Random Forest",         "confusion_matrix_randomforest"),
     ("knn", y_pred_knn, "k-NN",                  "confusion_matrix_knn"),
     ("dt",  y_pred_dt,  "Decision Tree",         "confusion_matrix_decisiontree"),
-    ("tf",  y_pred_tf,  "TensorFlow",            "confusion_matrix_tensorflow"),
+    ("tf_model",  y_pred_tf,  "TensorFlow",            "confusion_matrix_tensorflow"),
 ]
 
 for _, y_pred, title, fname in CM_CONFIGS:
@@ -99,7 +99,7 @@ IMPORTANCE_CONFIGS = [
     ("lr",  lr,  lambda: lr.coef_[0],                       "Logistic Regression", "feature_importances_logistic_regression"),
     ("knn", knn, lambda: _perm(knn, X_test_sc),             "k-NN (Permutation)",  "feature_importances_knn"),
     ("dt",  dt,  lambda: dt.feature_importances_,           "Decision Tree",       "feature_importances_decision_tree"),
-    ("tf",  tf_model, lambda: _tf_perm(X_test_sc, y_test),  "TensorFlow (Permutation)", "feature_importances_tensorflow"),
+    ("tf_model",  tf_model, lambda: _tf_perm(X_test_sc, y_test),  "TensorFlow (Permutation)", "feature_importances_tensorflow"),
 ]
 
 for name, model, get_imp, title, fname in IMPORTANCE_CONFIGS:
@@ -108,8 +108,8 @@ for name, model, get_imp, title, fname in IMPORTANCE_CONFIGS:
     if name == "lr":
         values = np.abs(values)
     importances = pd.Series(values, index=data.feature_names).sort_values(ascending=False)
-    print(f"\nTop 10 features — {title}:")
-    print(importances.head(10))
+    #print(f"\nTop 10 features — {title}:")
+    #print(importances.head(10))
 
     importances.head(10).plot(kind="barh")
     plt.xlabel("Importance score")

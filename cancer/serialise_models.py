@@ -21,11 +21,11 @@ model_bundles = {
     "logisticregression": {"model": lr,  "scaler": scaler},
     "knn":                {"model": knn, "scaler": scaler},
     "decisiontree":       {"model": dt},
-    "tensorflow":        {"model": tf_model},
+    "tf_model":        {"model": tf_model},
 }
 
 for name, bundle in model_bundles.items():
-    if name == "tensorflow":
+    if name == "tf_model":
         # For TensorFlow, we save the model in its native format
         path = os.path.join(OUTPUT_DIR, f"{name}_model.keras")
         tf_model.save(path)
