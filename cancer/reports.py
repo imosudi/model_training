@@ -1,4 +1,6 @@
 # Full classification report
+import time
+
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_val_score
@@ -63,9 +65,14 @@ cv_scores = {}
 for name, (model, scale) in MODEL_CONFIGS.items():
     if name == "tf_model":
         cv_scores[name] = _tensorflow_cross_val_accuracy(X_train_sc, y_train)
-        print(f"{name} CV accuracy: {cv_scores[name]:.3f}")
+        #print(f"{name} CV accuracy: {cv_scores[name]:.3f}")
         continue
 
     X = X_train_sc if scale else X_train
     cv_scores[name] = cross_val_score(model, X, y_train, cv=5).mean()
-    print(f"{name} CV accuracy: {cv_scores[name]:.3f}")
+    #print(f"{name} CV accuracy: {cv_scores[name]:.3f}")
+print(f"\nCross-validation scores: \n{cv_scores}\n")
+#time.sleep(200)  # just to space out the prints a bit
+
+"""for name, score in cv_scores.items():
+    print(f"{name} CV accuracy: {score:.3f}")   """

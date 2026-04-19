@@ -2,11 +2,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold, learning_curve
 
 import tensorflow as tf
-from tensorflow.keras import layers, models
+from tensorflow.keras import callbacks, layers, models
 import seaborn as sns
 
 
@@ -30,7 +31,6 @@ TF_MAIN_FIT_PARAMS = {
     "epochs": 50,
     "batch_size": 32,
     "verbose": 1,
-    "validation_split": 0.2,
 }
 
 TF_LOOP_FIT_PARAMS = {
@@ -54,6 +54,14 @@ def build_tensorflow_model():
         metrics=["accuracy"],
     )
     return model
+
+
+def build_sklearn_history(model, X_fit, y_fit, X_val, y_val):
+    return {
+        "epoch": [1],
+        "accuracy": [accuracy_score(y_fit, model.predict(X_fit))],
+        "val_accuracy": [accuracy_score(y_val, model.predict(X_val))],
+    }
 
 
 def _tensorflow_learning_curve(X, y, train_sizes, n_splits=5):
@@ -105,6 +113,11 @@ MODEL_CONFIGS = {
 # ── Training ──────────────────────────────────────────────────────────────────
 training_models = {}
 training_histories = {}
+early_stop = callbacks.EarlyStopping(
+    monitor="val_loss",
+    patience=5,
+    restore_best_weights=True,
+)
 for name, (model, scale) in MODEL_CONFIGS.items():
     print(f"\nTraining {name} model...")
     if name == "tf_model":
@@ -113,14 +126,22 @@ for name, (model, scale) in MODEL_CONFIGS.items():
         training_histories[name] = model.fit(
             X_train_sc if scale else X_train,
             y_train,
+            validation_data=(X_test_sc, y_test),
+            callbacks=[early_stop],
             **TF_MAIN_FIT_PARAMS,
         )
         training_models[name] = model
         continue
 
-    training_models[name] = model.fit(X_train_sc if scale else X_train, y_train)
+    X_fit = X_train_sc if scale else X_train
+    X_val = X_test_sc if scale else X_test
+    training_models[name] = model.fit(X_fit, y_train)
+    training_histories[name] = build_sklearn_history(
+        training_models[name], X_fit, y_train, X_val, y_test
+    )
 
 lr, knn, rf, dt, tf_model = (training_models[k] for k in ("lr", "knn", "rf", "dt", "tf_model"))
+history = training_histories["tf_model"]
 
 # ── Learning curves ───────────────────────────────────────────────────────────
 LC_PARAMS = dict(cv=5, train_sizes=np.linspace(0.2, 1.0, 5), scoring="accuracy")
