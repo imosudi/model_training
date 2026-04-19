@@ -2,8 +2,8 @@
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import classification_report
 
-from trainings import rf, lr, knn, dt, X_test_sc, y_test
-from validations import y_pred_rf, y_pred_lr, y_pred_knn, y_pred_dt
+from trainings import rf, lr, knn, dt, tf_model, X_test_sc, y_test
+from validations import y_pred_rf, y_pred_lr, y_pred_knn, y_pred_dt, y_pred_tf
 from data_load import X_test, y_test
 
 print("Classification Reports:\n")
@@ -18,6 +18,9 @@ print("k-NN:\n", classification_report(y_test, y_pred_knn,
       target_names=["Malignant", "Benign"]))
 # Decision Tree
 print("Decision Tree:\n", classification_report(y_test, y_pred_dt,
+      target_names=["Malignant", "Benign"]))
+# TensorFlow
+print("TensorFlow:\n", classification_report(y_test, y_pred_tf,
       target_names=["Malignant", "Benign"]))
 
 #time.sleep(200)  # just to space out the prints a bit
@@ -44,3 +47,6 @@ print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_knn):.3f}") # ~0.987
 
 y_prob_dt = dt.predict_proba(X_test)[:, 1]
 print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_dt):.3f}") # ~0.980
+
+y_prob_tf = tf_model.predict(X_test_sc, verbose=0)[:, 1]
+print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_tf):.3f}")

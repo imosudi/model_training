@@ -6,11 +6,13 @@ import numpy as np
 OUTPUT_DIR = "cancer/outputs/models"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-from trainings import scaler
+from trainings import scaler, tf, lr, knn, rf, dt, tf_model
 from visualisations import *
 from reports import *
 
 np.random.seed(42)
+tf.random.set_seed(42)
+
 
 # Models that benefit from the scaler are bundled with it;
 # tree-based models that don't need it are saved without.
@@ -19,6 +21,7 @@ model_bundles = {
     "logisticregression": {"model": lr,  "scaler": scaler},
     "knn":                {"model": knn, "scaler": scaler},
     "decisiontree":       {"model": dt},
+    "tensorflow":        {"model": tf_model},
 }
 
 for name, bundle in model_bundles.items():
