@@ -25,6 +25,12 @@ model_bundles = {
 }
 
 for name, bundle in model_bundles.items():
+    if name == "tensorflow":
+        # For TensorFlow, we save the model in its native format
+        path = os.path.join(OUTPUT_DIR, f"{name}_model.keras")
+        tf_model.save(path)
+        print(f"{name} model saved → {path}")
+        continue
     path = os.path.join(OUTPUT_DIR, f"{name}_model.pkl")
     joblib.dump(bundle, path)
     print(f"{name} model saved → {path}")
