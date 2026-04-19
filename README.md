@@ -112,6 +112,23 @@ model_training/
 ## Requirements
 
 ```bash
+git clone git@github.com:imosudi/model_training.git
+```
+
+```bash
+cd model_training
+```
+
+```bash
+python3 -m venv venv
+```
+
+```bash
+source venv/bin/activate
+```
+
+
+```bash
 pip install -r requirements.txt
 ```
 
