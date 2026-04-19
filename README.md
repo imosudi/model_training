@@ -60,7 +60,7 @@ Breast Cancer Diagnosis now compares Logistic Regression, Random Forest, k-NN, D
 - Per-model feature importance plots
 - Serialised model artifacts in `cancer/outputs/models/`
 
-### 2. Single Model Training (`one/train_one.py`)
+### 2. Single Model Training (`one/train_iris.py`)
 Training pipeline for individual machine learning models.
 
 ### 3. Multi-Model Comparison (`three/`)
@@ -81,7 +81,7 @@ model_training/
 │   ├── reports.py            # Report generation
 │   └── outputs/              # Generated files and plots
 ├── one/                      # Single model training
-│   └── train_one.py
+│   └── train_iris.py
 ├── three/                    # Multi-model comparison
 ├── requirements.txt          # dependency
 ├── README.md                 # This file
@@ -117,15 +117,16 @@ pip install -r requirements.txt
 
 ## Usage
 
-Run the Iris classification example:
-```bash
-python one/train_one.py
-```
-
 Run the Breast Cancer diagnosis example:
 ```bash
 python cancer/serialise_models.py
 ```
+
+Run the Iris classification example:
+```bash
+python one/train_iris.py
+```
+
 
 This command trains the models, generates reports and visualisations, and writes serialised artifacts to `cancer/outputs/models/`.
 
@@ -152,3 +153,26 @@ These scripts are designed as learning resources for:
 - Confusion matrices reveal which classes are confused with each other
 - Feature importance helps understand model decisions
 - TensorFlow uses CPU if CUDA drivers are not available
+
+
+## 6. License
+
+This project is licensed under the **BSD 3-Clause License** - see the [LICENSE](./LICENSE) file for details.
+
+```
+BSD 3-Clause License
+
+Copyright (c) 2026, Mosudi Isiaka, IoT and Systems FH Technikum Wien
+All rights reserved.
+```
+
+---
+
+##  Author
+
+**Mosudi Isiaka O.**  
+📧 [mosudi.isiaka@gmail.com](mailto:mosudi.isiaka@gmail.com)  | [FH Technikum Wien email](mailto:io24m006@technikum-wien.at)  
+🌐 [https://mioemi.com](https://mioemi.com)   
+💻 [https://github.com/imosudi](https://github.com/imosudi)
+
+---
