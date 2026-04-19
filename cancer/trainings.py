@@ -1,8 +1,12 @@
+import warnings
+
+from sklearn.base import clone
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, log_loss
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold, learning_curve
 
@@ -57,11 +61,129 @@ def build_tensorflow_model():
 
 
 def build_sklearn_history(model, X_fit, y_fit, X_val, y_val):
+    train_acc = accuracy_score(y_fit, model.predict(X_fit))
+    val_acc = accuracy_score(y_val, model.predict(X_val))
     return {
         "epoch": [1],
-        "accuracy": [accuracy_score(y_fit, model.predict(X_fit))],
-        "val_accuracy": [accuracy_score(y_val, model.predict(X_val))],
+        "accuracy": [train_acc],
+        "val_accuracy": [val_acc],
+        "loss": [1 - train_acc],
+        "val_loss": [1 - val_acc],
     }
+
+
+def build_tensorflow_history(history_obj):
+    history_data = dict(history_obj.history)
+    history_data["epoch"] = [epoch + 1 for epoch in history_obj.epoch]
+    history_data["x_label"] = "Epoch"
+    return history_data
+
+
+def build_logistic_regression_history(X_fit, y_fit, X_val, y_val, num_steps=200):
+    model = LogisticRegression(
+        solver="saga",
+        C=1.0,
+        max_iter=1,
+        warm_start=True,
+        random_state=42,
+        verbose=0,
+    )
+    history = {
+        "epoch": [],
+        "accuracy": [],
+        "val_accuracy": [],
+        "loss": [],
+        "val_loss": [],
+        "x_label": "Iteration",
+    }
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", ConvergenceWarning)
+        for step in range(1, num_steps + 1):
+            model.fit(X_fit, y_fit)
+            history["epoch"].append(step)
+            history["accuracy"].append(model.score(X_fit, y_fit))
+            history["val_accuracy"].append(model.score(X_val, y_val))
+            history["loss"].append(log_loss(y_fit, model.predict_proba(X_fit)))
+            history["val_loss"].append(log_loss(y_val, model.predict_proba(X_val)))
+
+    return model, history
+
+
+def build_random_forest_history(X_fit, y_fit, X_val, y_val, num_steps=100):
+    model = RandomForestClassifier(
+        n_estimators=1,
+        warm_start=True,
+        random_state=42,
+        verbose=0,
+    )
+    history = {
+        "epoch": [],
+        "accuracy": [],
+        "val_accuracy": [],
+        "loss": [],
+        "val_loss": [],
+        "x_label": "n_estimators",
+    }
+
+    for step in range(1, num_steps + 1):
+        model.n_estimators = step
+        model.fit(X_fit, y_fit)
+        history["epoch"].append(step)
+        history["accuracy"].append(model.score(X_fit, y_fit))
+        history["val_accuracy"].append(model.score(X_val, y_val))
+        history["loss"].append(log_loss(y_fit, model.predict_proba(X_fit)))
+        history["val_loss"].append(log_loss(y_val, model.predict_proba(X_val)))
+
+    return model, history
+
+
+def build_depth_history(X_fit, y_fit, X_val, y_val, max_depth=10):
+    depths = list(range(1, max_depth + 1))
+    history = {
+        "epoch": depths,
+        "accuracy": [],
+        "val_accuracy": [],
+        "loss": [],
+        "val_loss": [],
+        "x_label": "max_depth",
+    }
+
+    for depth in depths:
+        model = DecisionTreeClassifier(max_depth=depth, random_state=42)
+        model.fit(X_fit, y_fit)
+        history["accuracy"].append(model.score(X_fit, y_fit))
+        history["val_accuracy"].append(model.score(X_val, y_val))
+        history["loss"].append(log_loss(y_fit, model.predict_proba(X_fit)))
+        history["val_loss"].append(log_loss(y_val, model.predict_proba(X_val)))
+
+    final_model = DecisionTreeClassifier(max_depth=3, random_state=42)
+    final_model.fit(X_fit, y_fit)
+    return final_model, history
+
+
+def build_knn_history(X_fit, y_fit, X_val, y_val, max_neighbors=25):
+    neighbors = list(range(1, max_neighbors + 1))
+    history = {
+        "epoch": neighbors,
+        "accuracy": [],
+        "val_accuracy": [],
+        "loss": [],
+        "val_loss": [],
+        "x_label": "n_neighbors",
+    }
+
+    for n_neighbors in neighbors:
+        model = KNeighborsClassifier(n_neighbors=n_neighbors)
+        model.fit(X_fit, y_fit)
+        history["accuracy"].append(model.score(X_fit, y_fit))
+        history["val_accuracy"].append(model.score(X_val, y_val))
+        history["loss"].append(log_loss(y_fit, model.predict_proba(X_fit)))
+        history["val_loss"].append(log_loss(y_val, model.predict_proba(X_val)))
+
+    final_model = KNeighborsClassifier(n_neighbors=5)
+    final_model.fit(X_fit, y_fit)
+    return final_model, history
 
 
 def _tensorflow_learning_curve(X, y, train_sizes, n_splits=5):
@@ -103,9 +225,9 @@ def _tensorflow_learning_curve(X, y, train_sizes, n_splits=5):
 
 # ── Model definitions: (model, needs_scaling) ─────────────────────────────────
 MODEL_CONFIGS = {
-    "lr":  (LogisticRegression(solver="saga", C=1.0, max_iter=1000, random_state=42,  verbose=1),  True),
+    "lr":  (LogisticRegression(solver="saga", C=1.0, max_iter=1000, random_state=42, verbose=0),  True),
     "knn": (KNeighborsClassifier(n_neighbors=5),                         True),
-    "rf":  (RandomForestClassifier(n_estimators=100, random_state=42, verbose=1),  False),
+    "rf":  (RandomForestClassifier(n_estimators=100, random_state=42, verbose=0),  False),
     "dt":  (DecisionTreeClassifier(max_depth=3, random_state=42),       False),
     "tf_model": (build_tensorflow_model(), True),
 }
@@ -120,28 +242,49 @@ early_stop = callbacks.EarlyStopping(
 )
 for name, (model, scale) in MODEL_CONFIGS.items():
     print(f"\nTraining {name} model...")
+    X_fit = X_train_sc if scale else X_train
+    X_val = X_test_sc if scale else X_test
+
+    if name == "lr":
+        training_models[name], training_histories[name] = build_logistic_regression_history(
+            X_fit, y_train, X_val, y_test
+        )
+        continue
+
+    if name == "rf":
+        training_models[name], training_histories[name] = build_random_forest_history(
+            X_fit, y_train, X_val, y_test
+        )
+        continue
+
+    if name == "dt":
+        training_models[name], training_histories[name] = build_depth_history(
+            X_fit, y_train, X_val, y_test
+        )
+        continue
+
+    if name == "knn":
+        training_models[name], training_histories[name] = build_knn_history(
+            X_fit, y_train, X_val, y_test
+        )
+        continue
+
     if name == "tf_model":
         print("\nTensorFlow model summary:")
         model.summary()
-        training_histories[name] = model.fit(
-            X_train_sc if scale else X_train,
+        tf_history = model.fit(
+            X_fit,
             y_train,
             validation_data=(X_test_sc, y_test),
             callbacks=[early_stop],
             **TF_MAIN_FIT_PARAMS,
         )
+        training_histories[name] = build_tensorflow_history(tf_history)
         training_models[name] = model
         continue
 
-    X_fit = X_train_sc if scale else X_train
-    X_val = X_test_sc if scale else X_test
-    training_models[name] = model.fit(X_fit, y_train)
-    training_histories[name] = build_sklearn_history(
-        training_models[name], X_fit, y_train, X_val, y_test
-    )
-
 lr, knn, rf, dt, tf_model = (training_models[k] for k in ("lr", "knn", "rf", "dt", "tf_model"))
-history = training_histories["tf_model"]
+history = tf_history
 
 # ── Learning curves ───────────────────────────────────────────────────────────
 LC_PARAMS = dict(cv=5, train_sizes=np.linspace(0.2, 1.0, 5), scoring="accuracy")

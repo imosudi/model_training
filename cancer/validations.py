@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.model_selection import StratifiedKFold
 
 from trainings import (
     MODEL_CONFIGS,
@@ -11,6 +11,7 @@ from trainings import (
     X_train_sc,
     build_tensorflow_model,
     tf_model,
+    training_models,
     y_train,
 )
 
@@ -31,12 +32,13 @@ def _tensorflow_cross_val_accuracy(X, y, n_splits=5):
 
 # ── Test-set predictions ──────────────────────────────────────────────────────
 predictions = {}
-for name, (model, scale) in MODEL_CONFIGS.items():
+for name, (_, scale) in MODEL_CONFIGS.items():
     if name == "tf_model":
         tf_probs = tf_model.predict(X_test_sc, verbose=0)
         predictions[name] = np.argmax(tf_probs, axis=1)
         continue
 
+    model = training_models[name]
     predictions[name] = model.predict(X_test_sc if scale else X_test)
 
 y_pred_lr, y_pred_knn, y_pred_rf, y_pred_dt, y_pred_tf = (

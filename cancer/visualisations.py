@@ -9,12 +9,51 @@ from data_load import data, X_train, y_train
 from trainings import (
     X_train_sc, X_test_sc,
     rf, lr, knn, dt, tf_model,
+    training_histories,
     learning_curves,
     tf_val_scores
 )
 from validations import y_pred_rf, y_pred_lr, y_pred_knn, y_pred_dt, y_pred_tf
 from data_load import y_test
 OUTPUT = "cancer/outputs"
+
+# ── Training vs validation loss & accuracy ───────────────────────────────────
+HISTORY_TITLES = {
+    "lr": "Logistic Regression",
+    "rf": "Random Forest",
+    "knn": "k-NN",
+    "dt": "Decision Tree",
+    "tf_model": "TensorFlow",
+}
+
+fig, axes = plt.subplots(len(HISTORY_TITLES), 2, figsize=(12, 4 * len(HISTORY_TITLES)))
+
+for row_idx, (name, title) in enumerate(HISTORY_TITLES.items()):
+    history_data = training_histories[name]
+    epochs = history_data["epoch"]
+    x_label = history_data.get("x_label", "Epoch")
+
+    loss_ax = axes[row_idx, 0]
+    loss_ax.plot(epochs, history_data["loss"], marker="o", label="Train Loss")
+    loss_ax.plot(epochs, history_data["val_loss"], marker="o", label="Validation Loss")
+    loss_ax.set_title(f"{title} Loss")
+    loss_ax.set_xlabel(x_label)
+    loss_ax.set_ylabel("Loss")
+    loss_ax.legend()
+
+    acc_ax = axes[row_idx, 1]
+    acc_ax.plot(epochs, history_data["accuracy"], marker="o", label="Train Accuracy")
+    acc_ax.plot(epochs, history_data["val_accuracy"], marker="o", label="Validation Accuracy")
+    acc_ax.set_title(f"{title} Accuracy")
+    acc_ax.set_xlabel(x_label)
+    acc_ax.set_ylabel("Accuracy")
+    acc_ax.legend()
+
+plt.tight_layout()
+path = f"{OUTPUT}/training_validation_curves.png"
+plt.savefig(path, dpi=150)
+plt.close()
+print(f"Saved {path}")
 
 # ── Learning curves ───────────────────────────────────────────────────────────
 LC_TITLES = {
