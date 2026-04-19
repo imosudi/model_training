@@ -51,7 +51,6 @@ Breast Cancer Diagnosis now compares Logistic Regression, Random Forest, k-NN, D
 - Model serialisation:
   - scikit-learn models saved as `.pkl`
   - TensorFlow model saved as `.keras`
-  - TensorFlow scaler saved separately as `.pkl`
 
 **Generated outputs include:**
 - `training_validation_curves.png`
