@@ -1,10 +1,10 @@
 # Basic AI/ML Model Training
 
-Educational machine learning project covering classical ML and TensorFlow classification workflows, evaluation, visualization, and model serialization.
+Educational machine learning project covering classical ML and TensorFlow classification workflows, evaluation, visualisation, and model serialisation.
 
 ## Overview
 
-This repository contains hands-on classification examples built with scikit-learn and TensorFlow. It covers data preprocessing, model training, cross-validation, reporting, visualization, and model export.
+This repository contains hands-on classification examples built with scikit-learn and TensorFlow. It covers data preprocessing, model training, cross-validation, reporting, visualisation, and model export.
 
 Breast Cancer Diagnosis now compares Logistic Regression, Random Forest, k-NN, Decision Tree, and a TensorFlow neural network on the Breast Cancer Wisconsin dataset. The workflow includes data exploration, train/test splitting, feature scaling, cross-validation, classification reports, ROC-AUC, confusion matrices, learning curves, feature importance analysis, and training-vs-validation plots.
 
@@ -16,11 +16,11 @@ Breast Cancer Diagnosis now compares Logistic Regression, Random Forest, k-NN, D
 **Dataset:** Breast Cancer Wisconsin (569 samples, 30 features)
 
 **Files:**
-- `serialise_models.py` - Main model serialization script
+- `serialise_models.py` - Main model serialisation script
 - `data_load.py` - Data loading and preprocessing utilities
 - `trainings.py` - Training functions and pipelines
 - `validations.py` - Model validation and cross-validation
-- `visualisations.py` - Plotting and visualization functions
+- `visualisations.py` - Plotting and visualisation functions
 - `reports.py` - Report generation and metrics calculation
 - `outputs/` - Directory for generated plots and model files
 
@@ -48,7 +48,7 @@ Breast Cancer Diagnosis now compares Logistic Regression, Random Forest, k-NN, D
   - Logistic Regression: absolute coefficients
   - k-NN and TensorFlow: permutation importance
 - Unified training-history plots for train vs validation loss and accuracy
-- Model serialization:
+- Model serialisation:
   - scikit-learn models saved as `.pkl`
   - TensorFlow model saved as `.keras`
   - TensorFlow scaler saved separately as `.pkl`
@@ -58,7 +58,7 @@ Breast Cancer Diagnosis now compares Logistic Regression, Random Forest, k-NN, D
 - Per-model learning curves
 - Per-model confusion matrices
 - Per-model feature importance plots
-- Serialized model artifacts in `cancer/outputs/models/`
+- Serialised model artifacts in `cancer/outputs/models/`
 
 ### 2. Single Model Training (`one/train_one.py`)
 Training pipeline for individual machine learning models.
@@ -92,7 +92,7 @@ model_training/
 
 ## Core Concepts Covered
 
-- **Data Exploration:** Shape, class distribution, summary statistics, pairplot visualization
+- **Data Exploration:** Shape, class distribution, summary statistics, pairplot visualisation
 - **Train/Test Splitting:** Stratified splits to preserve class proportions
 - **Feature Scaling:** StandardScaler for distance-based and neural-network models
 - **Cross-Validation:** k-fold CV for robust model evaluation
@@ -104,8 +104,8 @@ model_training/
   - Classification reports (precision, recall, F1-score, support)
   - AUC-ROC score
 - **Feature Importance:** Understanding which features drive predictions
-- **Visualization:** Training-validation curves, confusion matrices, learning curves, feature importance plots
-- **Serialization:** Exporting sklearn and TensorFlow models for reuse
+- **Visualisation:** Training-validation curves, confusion matrices, learning curves, feature importance plots
+- **Serialisation:** Exporting sklearn and TensorFlow models for reuse
 
 ---
 
@@ -127,7 +127,7 @@ Run the Breast Cancer diagnosis example:
 python cancer/serialise_models.py
 ```
 
-This command trains the models, generates reports and visualizations, and writes serialized artifacts to `cancer/outputs/models/`.
+This command trains the models, generates reports and visualisations, and writes serialised artifacts to `cancer/outputs/models/`.
 
 ---
 
