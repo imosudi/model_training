@@ -155,7 +155,7 @@ These scripts are designed as learning resources for:
 - TensorFlow uses CPU if CUDA drivers are not available
 
 
-## 6. License
+## License
 
 This project is licensed under the **BSD 3-Clause License** - see the [LICENSE](./LICENSE) file for details.
 
